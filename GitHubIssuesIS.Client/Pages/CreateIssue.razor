@@ -1,0 +1,89 @@
+@page "/issues/create"
+@inject IssueClient IssueClient
+@inject NavigationManager NavigationManager
+
+<main class="page-shell">
+    <div class="page-header">
+        <h1>Create issue</h1>
+        <a class="button secondary" href="/issues">Back</a>
+    </div>
+
+    <section class="panel">
+        <EditForm Model="@issue" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <p class="error">@error</p>
+            }
+
+            <div class="form-grid">
+                <div class="form-row">
+                    <label for="github-id">GitHub ID</label>
+                    <InputNumber id="github-id" @bind-Value="issue.GithubId" />
+                    <ValidationMessage For="() => issue.GithubId" />
+                </div>
+
+                <div class="form-row">
+                    <label for="number">Number</label>
+                    <InputNumber id="number" @bind-Value="issue.Number" />
+                    <ValidationMessage For="() => issue.Number" />
+                </div>
+
+                <div class="form-row">
+                    <label for="title">Title</label>
+                    <InputText id="title" @bind-Value="issue.Title" />
+                    <ValidationMessage For="() => issue.Title" />
+                </div>
+
+                <div class="form-row">
+                    <label for="state">State</label>
+                    <InputText id="state" @bind-Value="issue.State" />
+                    <ValidationMessage For="() => issue.State" />
+                </div>
+
+                <div class="form-row">
+                    <label for="author">Author</label>
+                    <InputText id="author" @bind-Value="issue.AuthorLogin" />
+                    <ValidationMessage For="() => issue.AuthorLogin" />
+                </div>
+
+                <div class="form-row">
+                    <label for="url">URL</label>
+                    <InputText id="url" @bind-Value="issue.HtmlUrl" />
+                    <ValidationMessage For="() => issue.HtmlUrl" />
+                </div>
+
+                <div class="form-row">
+                    <label for="body">Body</label>
+                    <InputTextArea id="body" @bind-Value="issue.Body" />
+                    <ValidationMessage For="() => issue.Body" />
+                </div>
+
+                <div class="actions">
+                    <button type="submit">Save</button>
+                    <a class="button secondary" href="/issues">Cancel</a>
+                </div>
+            </div>
+        </EditForm>
+    </section>
+</main>
+
+@code {
+    private readonly CreateIssueDto issue = new();
+    private string? error;
+
+    private async Task SaveAsync()
+    {
+        var created = await IssueClient.CreateAsync(issue);
+
+        if (created is null)
+        {
+            error = "Create failed.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("/issues");
+    }
+}

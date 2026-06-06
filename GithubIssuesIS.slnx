@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Application/">
+    <Project Path="GithubIssuesIS.Application/GithubIssuesIS.Application.csproj" />
+  </Folder>
+  <Folder Name="/Domain/">
+    <Project Path="GitHubIssuesIS.Domain/GitHubIssuesIS.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/" />
+  <Folder Name="/Repository/">
+    <Project Path="GithubIssuesIS.Repository/GithubIssuesIS.Repository.csproj" />
+  </Folder>
+  <Folder Name="/_Apps/">
+    <Project Path="GithubIssuesIS.API/GithubIssuesIS.API.csproj" />
+    <Project Path="GitHubIssuesIS.Client/GitHubIssuesIS.Client.csproj" />
+  </Folder>
+</Solution>

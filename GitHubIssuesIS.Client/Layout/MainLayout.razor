@@ -1,0 +1,19 @@
+@inherits LayoutComponentBase
+
+<div class="app-frame">
+    <aside class="sidebar">
+        <a class="brand" href="/issues">GitHubIssuesIS</a>
+        <nav>
+            <NavLink href="/issues" Match="NavLinkMatch.Prefix">Issues</NavLink>
+            <NavLink href="/issues/create">Create</NavLink>
+            <NavLink href="/login">Login</NavLink>
+            <NavLink href="/import">Import</NavLink>
+            <NavLink href="/soap-search">SOAP</NavLink>
+            <NavLink href="/weather">Weather</NavLink>
+            <NavLink href="/graphql">GraphQL</NavLink>
+        </nav>
+    </aside>
+    <div class="content">
+        @Body
+    </div>
+</div>

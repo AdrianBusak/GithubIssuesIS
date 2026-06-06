@@ -1,0 +1,122 @@
+@page "/issues/edit/{Number:int}"
+@inject IssueClient IssueClient
+@inject NavigationManager NavigationManager
+
+<main class="page-shell">
+    <div class="page-header">
+        <h1>Edit issue #@Number</h1>
+        <a class="button secondary" href="/issues">Back</a>
+    </div>
+
+    <section class="panel">
+        @if (loading)
+        {
+            <p class="status">Loading...</p>
+        }
+        else if (issue is null)
+        {
+            <p class="status">Issue not found.</p>
+        }
+        else
+        {
+            <EditForm Model="@issue" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                @if (!string.IsNullOrWhiteSpace(error))
+                {
+                    <p class="error">@error</p>
+                }
+
+                <div class="form-grid">
+                    <div class="form-row">
+                        <label for="title">Title</label>
+                        <InputText id="title" @bind-Value="issue.Title" />
+                        <ValidationMessage For="() => issue.Title" />
+                    </div>
+
+                    <div class="form-row">
+                        <label for="state">State</label>
+                        <InputText id="state" @bind-Value="issue.State" />
+                        <ValidationMessage For="() => issue.State" />
+                    </div>
+
+                    <div class="form-row">
+                        <label for="author">Author</label>
+                        <InputText id="author" @bind-Value="issue.AuthorLogin" />
+                        <ValidationMessage For="() => issue.AuthorLogin" />
+                    </div>
+
+                    <div class="form-row">
+                        <label for="url">URL</label>
+                        <InputText id="url" @bind-Value="issue.HtmlUrl" />
+                        <ValidationMessage For="() => issue.HtmlUrl" />
+                    </div>
+
+                    <div class="form-row">
+                        <label for="closed-at">Closed at</label>
+                        <InputDate id="closed-at" @bind-Value="issue.ClosedAt" />
+                    </div>
+
+                    <div class="form-row">
+                        <label for="body">Body</label>
+                        <InputTextArea id="body" @bind-Value="issue.Body" />
+                        <ValidationMessage For="() => issue.Body" />
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit">Save</button>
+                        <a class="button secondary" href="/issues">Cancel</a>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </section>
+</main>
+
+@code {
+    [Parameter]
+    public int Number { get; set; }
+
+    private bool loading = true;
+    private UpdateIssueDto? issue;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var existing = await IssueClient.GetByNumberAsync(Number);
+
+        if (existing is not null)
+        {
+            issue = new UpdateIssueDto
+            {
+                Title = existing.Title,
+                Body = existing.Body,
+                State = existing.State,
+                AuthorLogin = existing.AuthorLogin,
+                HtmlUrl = existing.HtmlUrl,
+                ClosedAt = existing.ClosedAt
+            };
+        }
+
+        loading = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (issue is null)
+        {
+            return;
+        }
+
+        var updated = await IssueClient.UpdateAsync(Number, issue);
+
+        if (updated is null)
+        {
+            error = "Update failed.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("/issues");
+    }
+}

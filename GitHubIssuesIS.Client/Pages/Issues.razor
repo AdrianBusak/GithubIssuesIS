@@ -1,0 +1,91 @@
+@page "/"
+@page "/issues"
+@inject IssueClient IssueClient
+
+<main class="page-shell">
+    <div class="page-header">
+        <h1>Issues</h1>
+        <a class="button" href="/issues/create">Create issue</a>
+    </div>
+
+    <section class="panel">
+        @if (!string.IsNullOrWhiteSpace(error))
+        {
+            <p class="error">@error</p>
+        }
+        else if (issues is null)
+        {
+            <p class="status">Loading...</p>
+        }
+        else if (issues.Count == 0)
+        {
+            <p class="status">No issues found.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Number</th>
+                        <th>Title</th>
+                        <th>State</th>
+                        <th>Author</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var issue in issues)
+                    {
+                        <tr>
+                            <td>@issue.Number</td>
+                            <td>@issue.Title</td>
+                            <td>@issue.State</td>
+                            <td>@issue.AuthorLogin</td>
+                            <td>@issue.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <div class="actions">
+                                    <a class="button secondary" href="@($"/issues/edit/{issue.Number}")">Edit</a>
+                                    <button class="danger" @onclick="() => DeleteAsync(issue.Number)">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </section>
+</main>
+
+@code {
+    private List<IssueDto>? issues;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            error = null;
+            issues = await IssueClient.GetAllAsync();
+        }
+        catch (HttpRequestException)
+        {
+            error = "API request failed.";
+        }
+    }
+
+    private async Task DeleteAsync(int number)
+    {
+        var deleted = await IssueClient.DeleteAsync(number);
+
+        if (deleted)
+        {
+            await LoadAsync();
+        }
+    }
+}
