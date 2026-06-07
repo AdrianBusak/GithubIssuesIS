@@ -1,5 +1,5 @@
 using GithubIssuesIS.Application.Services;
-using GithubIssuesIS.Repository;
+using GithubIssuesIS.Repository.Extensions;
 
 namespace GithubIssuesIS.API.Exstensions;
 

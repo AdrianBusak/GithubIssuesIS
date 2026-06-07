@@ -2,9 +2,9 @@ using GithubIssuesIS.Application.Interfaces;
 using GithubIssuesIS.Repository.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GithubIssuesIS.Repository;
+namespace GithubIssuesIS.Repository.Extensions;
 
-public static class DependencyInjection
+public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddRepository(
         this IServiceCollection services,
