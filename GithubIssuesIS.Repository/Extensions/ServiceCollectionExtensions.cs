@@ -1,5 +1,5 @@
 using GithubIssuesIS.Application.Interfaces;
-using GithubIssuesIS.Repository.Services;
+using GithubIssuesIS.Repository.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GithubIssuesIS.Repository.Extensions;
@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<GithubIssuesIsDbContext>(options =>
             GithubIssuesIsDbContextOptions.ConfigureSqlServer(options, connectionString));
 
-        services.AddScoped<IRepository, RepositoryService>();
+        services.AddScoped<IIssueRepository, IssueRepository>();
 
         return services;
     }

@@ -3,40 +3,34 @@ using GithubIssuesIS.Application.Interfaces;
 
 namespace GithubIssuesIS.Application.Services;
 
-public class IssueService(IRepository repository)
+public class IssueService(IIssueRepository issueRepository) : IIssueService
 {
-    private readonly IRepository _repository = repository;
+    private readonly IIssueRepository _issueRepository = issueRepository;
 
     public Task<List<Issue>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return _repository.GetAllAsync<Issue>(cancellationToken);
+        return _issueRepository.GetAllAsync(cancellationToken);
     }
 
-    public async Task<Issue?> GetByNumberAsync(
+    public Task<Issue?> GetByNumberAsync(
         int number,
         CancellationToken cancellationToken = default)
     {
-        var issues = await _repository.FindAsync<Issue>(
-            issue => issue.Number == number,
-            cancellationToken);
-
-        return issues.FirstOrDefault();
+        return _issueRepository.GetByNumberAsync(number, cancellationToken);
     }
 
     public async Task<Issue> CreateAsync(
         Issue issue,
         CancellationToken cancellationToken = default)
     {
-        var exists = await _repository.AnyAsync<Issue>(
-            existingIssue => existingIssue.Number == issue.Number,
-            cancellationToken);
+        var exists = await _issueRepository.ExistsByNumberAsync(issue.Number, cancellationToken);
 
         if (exists)
         {
             throw new InvalidOperationException($"Issue with number {issue.Number} already exists.");
         }
 
-        return await _repository.AddAsync(issue, cancellationToken);
+        return await _issueRepository.AddAsync(issue, cancellationToken);
     }
 
     public async Task<Issue?> UpdateAsync(
@@ -44,7 +38,7 @@ public class IssueService(IRepository repository)
         Issue updatedIssue,
         CancellationToken cancellationToken = default)
     {
-        var issue = await GetByNumberAsync(number, cancellationToken);
+        var issue = await _issueRepository.GetByNumberAsync(number, cancellationToken);
 
         if (issue is null)
         {
@@ -58,7 +52,7 @@ public class IssueService(IRepository repository)
         issue.HtmlUrl = updatedIssue.HtmlUrl;
         issue.ClosedAt = updatedIssue.ClosedAt;
 
-        await _repository.UpdateAsync(issue, cancellationToken);
+        await _issueRepository.UpdateAsync(issue, cancellationToken);
 
         return issue;
     }
@@ -67,14 +61,14 @@ public class IssueService(IRepository repository)
         int number,
         CancellationToken cancellationToken = default)
     {
-        var issue = await GetByNumberAsync(number, cancellationToken);
+        var issue = await _issueRepository.GetByNumberAsync(number, cancellationToken);
 
         if (issue is null)
         {
             return false;
         }
 
-        await _repository.DeleteAsync(issue, cancellationToken);
+        await _issueRepository.DeleteAsync(issue, cancellationToken);
 
         return true;
     }

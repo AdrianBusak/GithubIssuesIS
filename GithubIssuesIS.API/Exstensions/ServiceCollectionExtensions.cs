@@ -1,3 +1,4 @@
+using GithubIssuesIS.Application.Interfaces;
 using GithubIssuesIS.Application.Services;
 using GithubIssuesIS.Repository.Extensions;
 
@@ -15,7 +16,7 @@ public static class ServiceCollectionExtensions
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
 
         services.AddRepository(connectionString);
-        services.AddScoped<IssueService>();
+        services.AddScoped<IIssueService, IssueService>();
         services.AddCors(options =>
         {
             options.AddPolicy(ClientCorsPolicy, policy =>

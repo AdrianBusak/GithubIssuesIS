@@ -1,15 +1,15 @@
 using GitHubIssuesIS.Domain.Entities;
 using GithubIssuesIS.API.Dtos.Issues;
-using GithubIssuesIS.Application.Services;
+using GithubIssuesIS.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GithubIssuesIS.API.Controllers;
 
 [ApiController]
 [Route("api/issues")]
-public class IssuesController(IssueService issueService) : ControllerBase
+public class IssuesController(IIssueService issueService) : ControllerBase
 {
-    private readonly IssueService _issueService = issueService;
+    private readonly IIssueService _issueService = issueService;
 
     [HttpGet]
     public async Task<ActionResult<List<IssueResponse>>> GetAll(CancellationToken cancellationToken)

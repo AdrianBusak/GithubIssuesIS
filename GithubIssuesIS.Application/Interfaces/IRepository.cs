@@ -1,49 +1,27 @@
-using System.Linq.Expressions;
-
 namespace GithubIssuesIS.Application.Interfaces;
 
-public interface IRepository
+public interface IRepository<TEntity>
+    where TEntity : class
 {
-    IQueryable<TEntity> Query<TEntity>() where TEntity : class;
+    Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
 
-    Task<List<TEntity>> GetAllAsync<TEntity>(
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
-
-    Task<List<TEntity>> FindAsync<TEntity>(
-        Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
-
-    Task<bool> AnyAsync<TEntity>(
-        Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
-
-    Task<TEntity?> GetByIdAsync<TEntity>(
+    Task<TEntity?> GetByIdAsync(
         object id,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
-    Task<TEntity> AddAsync<TEntity>(
+    Task<TEntity> AddAsync(
         TEntity entity,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
-    Task AddRangeAsync<TEntity>(
+    Task AddRangeAsync(
         IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
-    Task UpdateAsync<TEntity>(
+    Task UpdateAsync(
         TEntity entity,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
-    Task DeleteAsync<TEntity>(
+    Task DeleteAsync(
         TEntity entity,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
-
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default);
 }
