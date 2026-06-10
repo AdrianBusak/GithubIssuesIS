@@ -93,7 +93,6 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     {
         return new Issue
         {
-            GithubId = request.GithubId,
             Number = request.Number,
             Title = request.Title,
             Body = request.Body,
@@ -121,7 +120,6 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     {
         return new IssueResponse(
             issue.Id,
-            issue.GithubId,
             issue.Number,
             issue.Title,
             issue.Body,

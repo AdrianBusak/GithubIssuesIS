@@ -12,9 +12,6 @@ public class IssueConfiguration : IEntityTypeConfiguration<Issue>
 
         builder.HasKey(issue => issue.Id);
 
-        builder.Property(issue => issue.GithubId)
-            .IsRequired();
-
         builder.Property(issue => issue.Number)
             .IsRequired();
 
@@ -40,7 +37,5 @@ public class IssueConfiguration : IEntityTypeConfiguration<Issue>
 
         builder.HasIndex(issue => issue.Number)
             .IsUnique();
-
-        builder.HasIndex(issue => issue.GithubId);
     }
 }

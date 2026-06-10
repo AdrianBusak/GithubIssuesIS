@@ -4,9 +4,6 @@ namespace GithubIssuesIS.API.Dtos.Issues;
 
 public sealed class CreateIssueRequest
 {
-    [Range(1, long.MaxValue)]
-    public long GithubId { get; init; }
-
     [Range(1, int.MaxValue)]
     public int Number { get; init; }
 

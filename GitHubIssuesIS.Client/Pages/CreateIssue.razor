@@ -20,12 +20,6 @@
 
             <div class="form-grid">
                 <div class="form-row">
-                    <label for="github-id">GitHub ID</label>
-                    <InputNumber id="github-id" @bind-Value="issue.GithubId" />
-                    <ValidationMessage For="() => issue.GithubId" />
-                </div>
-
-                <div class="form-row">
                     <label for="number">Number</label>
                     <InputNumber id="number" @bind-Value="issue.Number" />
                     <ValidationMessage For="() => issue.Number" />
