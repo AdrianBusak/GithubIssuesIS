@@ -1,6 +1,8 @@
+using GitHubIssuesIS.Domain;
 using GitHubIssuesIS.Domain.Entities;
 using GithubIssuesIS.API.Dtos.Issues;
 using GithubIssuesIS.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GithubIssuesIS.API.Controllers;
@@ -12,6 +14,7 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     private readonly IIssueService _issueService = issueService;
 
     [HttpGet]
+    [Authorize(Roles = Roles.UserOrAdmin)]
     public async Task<ActionResult<List<IssueResponse>>> GetAll(CancellationToken cancellationToken)
     {
         var issues = await _issueService.GetAllAsync(cancellationToken);
@@ -23,6 +26,7 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     }
 
     [HttpGet("{number:int}")]
+    [Authorize(Roles = Roles.UserOrAdmin)]
     public async Task<ActionResult<IssueResponse>> GetByNumber(
         int number,
         CancellationToken cancellationToken)
@@ -38,6 +42,7 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<IssueResponse>> Create(
         CreateIssueRequest request,
         CancellationToken cancellationToken)
@@ -59,6 +64,7 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     }
 
     [HttpPut("{number:int}")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<IssueResponse>> Update(
         int number,
         UpdateIssueRequest request,
@@ -75,6 +81,7 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     }
 
     [HttpDelete("{number:int}")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Delete(
         int number,
         CancellationToken cancellationToken)
