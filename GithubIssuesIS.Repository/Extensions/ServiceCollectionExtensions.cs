@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
             GithubIssuesIsDbContextOptions.ConfigureSqlServer(options, connectionString));
 
         services.AddScoped<IIssueRepository, IssueRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
+using GitHubIssuesIS.Domain.Entities;
+
 namespace GithubIssuesIS.Repository;
 
 public class GithubIssuesIsDbContext : DbContext
@@ -8,6 +10,12 @@ public class GithubIssuesIsDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<Issue> Issues => Set<Issue>();
+
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
