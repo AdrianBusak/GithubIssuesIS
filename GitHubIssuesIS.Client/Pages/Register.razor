@@ -1,13 +1,13 @@
-@page "/login"
+@page "/register"
 @inject AuthClient AuthClient
 @inject NavigationManager NavigationManager
 
 <main class="page-shell">
     <div class="page-header">
-        <h1>Login</h1>
+        <h1>Register</h1>
     </div>
     <section class="panel">
-        <EditForm Model="@loginRequest" OnValidSubmit="LoginAsync">
+        <EditForm Model="@registerRequest" OnValidSubmit="RegisterAsync">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
@@ -19,19 +19,19 @@
             <div class="form-grid">
                 <div class="form-row">
                     <label for="username">Username</label>
-                    <InputText id="username" @bind-Value="loginRequest.Username" />
-                    <ValidationMessage For="() => loginRequest.Username" />
+                    <InputText id="username" @bind-Value="registerRequest.Username" />
+                    <ValidationMessage For="() => registerRequest.Username" />
                 </div>
                 <div class="form-row">
                     <label for="password">Password</label>
-                    <InputText id="password" type="password" @bind-Value="loginRequest.Password" />
-                    <ValidationMessage For="() => loginRequest.Password" />
+                    <InputText id="password" type="password" @bind-Value="registerRequest.Password" />
+                    <ValidationMessage For="() => registerRequest.Password" />
                 </div>
                 <div class="actions">
                     <button type="submit" disabled="@submitting">
-                        @(submitting ? "Signing in..." : "Login")
+                        @(submitting ? "Creating account..." : "Register")
                     </button>
-                    <a class="button secondary" href="/register">Create account</a>
+                    <a class="button secondary" href="/login">Back to login</a>
                 </div>
             </div>
         </EditForm>
@@ -39,22 +39,22 @@
 </main>
 
 @code {
-    private readonly LoginRequestDto loginRequest = new();
+    private readonly LoginRequestDto registerRequest = new();
     private bool submitting;
     private string? error;
 
-    private async Task LoginAsync()
+    private async Task RegisterAsync()
     {
         submitting = true;
         error = null;
 
         try
         {
-            var authenticated = await AuthClient.LoginAsync(loginRequest);
+            var authenticated = await AuthClient.RegisterAsync(registerRequest);
 
             if (!authenticated)
             {
-                error = "Invalid username or password.";
+                error = "Register failed. Username may already be taken.";
                 return;
             }
 

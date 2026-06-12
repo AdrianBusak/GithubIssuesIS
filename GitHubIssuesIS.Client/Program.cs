@@ -14,6 +14,7 @@ builder.Services.AddScoped(_ => new HttpClient
 });
 
 builder.Services.AddScoped<IssueClient>();
+builder.Services.AddScoped<AuthStateService>();
 builder.Services.AddScoped<AuthClient>();
 builder.Services.AddScoped<ImportClient>();
 builder.Services.AddScoped<SoapClient>();

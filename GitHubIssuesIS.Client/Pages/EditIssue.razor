@@ -1,4 +1,6 @@
 @page "/issues/edit/{Number:int}"
+@inject AuthClient AuthClient
+@inject AuthStateService AuthState
 @inject IssueClient IssueClient
 @inject NavigationManager NavigationManager
 
@@ -78,12 +80,23 @@
     [Parameter]
     public int Number { get; set; }
 
+    private bool authorized;
     private bool loading = true;
     private UpdateIssueDto? issue;
     private string? error;
 
     protected override async Task OnInitializedAsync()
     {
+        var authenticated = await AuthClient.EnsureAuthenticatedAsync();
+        authorized = authenticated && AuthState.IsAdmin;
+
+        if (!authorized)
+        {
+            loading = false;
+            NavigationManager.NavigateTo(authenticated ? "/issues" : "/login");
+            return;
+        }
+
         var existing = await IssueClient.GetByNumberAsync(Number);
 
         if (existing is not null)
@@ -104,7 +117,7 @@
 
     private async Task SaveAsync()
     {
-        if (issue is null)
+        if (!authorized || issue is null)
         {
             return;
         }

@@ -5,7 +5,9 @@
   <Folder Name="/Domain/">
     <Project Path="GitHubIssuesIS.Domain/GitHubIssuesIS.Domain.csproj" />
   </Folder>
-  <Folder Name="/Infrastructure/" />
+  <Folder Name="/Infrastructure/">
+    <Project Path="DMS.Infrastrucure.JwtAuthorization/DMS.Infrastrucure.JwtAuthorization.csproj" />
+  </Folder>
   <Folder Name="/Repository/">
     <Project Path="GithubIssuesIS.Repository/GithubIssuesIS.Repository.csproj" />
   </Folder>

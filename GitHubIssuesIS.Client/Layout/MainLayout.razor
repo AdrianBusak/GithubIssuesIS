@@ -1,19 +1,144 @@
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject AuthStateService AuthState
+@inject AuthClient AuthClient
+@inject NavigationManager NavigationManager
 
 <div class="app-frame">
     <aside class="sidebar">
         <a class="brand" href="/issues">GitHubIssuesIS</a>
         <nav>
             <NavLink href="/issues" Match="NavLinkMatch.Prefix">Issues</NavLink>
-            <NavLink href="/issues/create">Create</NavLink>
-            <NavLink href="/login">Login</NavLink>
+            @if (AuthState.IsAdmin)
+            {
+                <NavLink href="/issues/create">Create</NavLink>
+            }
             <NavLink href="/import">Import</NavLink>
             <NavLink href="/soap-search">SOAP</NavLink>
             <NavLink href="/weather">Weather</NavLink>
             <NavLink href="/graphql">GraphQL</NavLink>
         </nav>
     </aside>
-    <div class="content">
-        @Body
+    <div class="main-area">
+        <header class="topbar">
+            <div class="topbar-auth">
+                @if (AuthState.IsAuthenticated)
+                {
+                    <span class="user-badge">@AuthState.Username</span>
+                    <span class="role-badge">@AuthState.Role</span>
+                    <button type="button" class="secondary" @onclick="SignOutAsync">Sign out</button>
+                }
+                else
+                {
+                    <a class="button" href="/login">Login</a>
+                    <a class="button secondary" href="/register">Register</a>
+                }
+            </div>
+        </header>
+        <div class="content">
+            @Body
+        </div>
     </div>
 </div>
+
+@code {
+    private bool checkingRouteAccess;
+
+    protected override void OnInitialized()
+    {
+        AuthState.Changed += OnAuthStateChanged;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await EnsureRouteAccessAsync();
+        }
+    }
+
+    private async Task SignOutAsync()
+    {
+        await AuthClient.SignOutAsync();
+        NavigationManager.NavigateTo("/login", replace: true);
+    }
+
+    private void OnAuthStateChanged()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await EnsureRouteAccessAsync();
+            StateHasChanged();
+        });
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _ = InvokeAsync(EnsureRouteAccessAsync);
+    }
+
+    private async Task EnsureRouteAccessAsync()
+    {
+        if (checkingRouteAccess)
+        {
+            return;
+        }
+
+        checkingRouteAccess = true;
+
+        try
+        {
+            var path = GetCurrentPath();
+
+            if (!IsProtectedRoute(path))
+            {
+                return;
+            }
+
+            var authenticated = await AuthClient.EnsureAuthenticatedAsync();
+
+            if (!authenticated)
+            {
+                NavigationManager.NavigateTo("/login", replace: true);
+                return;
+            }
+
+            if (IsAdminOnlyRoute(path) && !AuthState.IsAdmin)
+            {
+                NavigationManager.NavigateTo("/issues", replace: true);
+            }
+        }
+        finally
+        {
+            checkingRouteAccess = false;
+        }
+    }
+
+    private string GetCurrentPath()
+    {
+        return NavigationManager
+            .ToBaseRelativePath(NavigationManager.Uri)
+            .Split('?', '#')[0]
+            .Trim('/')
+            .ToLowerInvariant();
+    }
+
+    private static bool IsProtectedRoute(string path)
+    {
+        return path is "" or "issues" ||
+            IsAdminOnlyRoute(path);
+    }
+
+    private static bool IsAdminOnlyRoute(string path)
+    {
+        return path == "issues/create" ||
+            path.StartsWith("issues/edit/", StringComparison.Ordinal);
+    }
+
+    public void Dispose()
+    {
+        AuthState.Changed -= OnAuthStateChanged;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

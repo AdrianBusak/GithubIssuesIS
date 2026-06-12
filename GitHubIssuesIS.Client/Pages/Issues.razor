@@ -1,11 +1,15 @@
 @page "/"
 @page "/issues"
+@inject AuthStateService AuthState
 @inject IssueClient IssueClient
 
 <main class="page-shell">
     <div class="page-header">
         <h1>Issues</h1>
-        <a class="button" href="/issues/create">Create issue</a>
+        @if (AuthState.IsAdmin)
+        {
+            <a class="button" href="/issues/create">Create issue</a>
+        }
     </div>
 
     <section class="panel">
@@ -31,7 +35,10 @@
                         <th>State</th>
                         <th>Author</th>
                         <th>Created</th>
-                        <th></th>
+                        @if (AuthState.IsAdmin)
+                        {
+                            <th></th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -43,12 +50,15 @@
                             <td>@issue.State</td>
                             <td>@issue.AuthorLogin</td>
                             <td>@issue.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                            <td>
-                                <div class="actions">
-                                    <a class="button secondary" href="@($"/issues/edit/{issue.Number}")">Edit</a>
-                                    <button class="danger" @onclick="() => DeleteAsync(issue.Number)">Delete</button>
-                                </div>
-                            </td>
+                            @if (AuthState.IsAdmin)
+                            {
+                                <td>
+                                    <div class="actions">
+                                        <a class="button secondary" href="@($"/issues/edit/{issue.Number}")">Edit</a>
+                                        <button class="danger" @onclick="() => DeleteAsync(issue.Number)">Delete</button>
+                                    </div>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -77,10 +87,19 @@
         {
             error = "API request failed.";
         }
+        catch (UnauthorizedAccessException)
+        {
+            error = "Login is required.";
+        }
     }
 
     private async Task DeleteAsync(int number)
     {
+        if (!AuthState.IsAdmin)
+        {
+            return;
+        }
+
         var deleted = await IssueClient.DeleteAsync(number);
 
         if (deleted)

@@ -75,6 +75,49 @@ button.danger {
     color: #fff;
 }
 
+.main-area {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-width: 0;
+}
+
+.topbar {
+    align-items: center;
+    background: #fff;
+    border-bottom: 1px solid #d8e0e8;
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    min-height: 64px;
+    padding: 0 28px;
+}
+
+.topbar-auth {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-left: auto;
+}
+
+.user-badge,
+.role-badge {
+    align-items: center;
+    border: 1px solid #d8e0e8;
+    border-radius: 6px;
+    color: #344251;
+    display: inline-flex;
+    min-height: 34px;
+    padding: 0 10px;
+}
+
+.role-badge {
+    background: #eef2f6;
+    color: #52616f;
+    font-weight: 600;
+}
+
 .content {
     min-width: 0;
     padding: 28px;
@@ -183,6 +226,18 @@ textarea {
 
     .sidebar nav {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .topbar {
+        align-items: flex-end;
+        gap: 10px;
+        justify-content: flex-end;
+        padding: 14px 18px;
+    }
+
+    .topbar-auth {
+        justify-content: flex-end;
+        width: 100%;
     }
 
     .content {
