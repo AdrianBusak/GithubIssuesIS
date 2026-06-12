@@ -350,6 +350,9 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
+# Local ASP.NET Core settings with developer secrets
+appsettings.Local.json
+
 # BeatPulse healthcheck temp database
 healthchecksdb
 
