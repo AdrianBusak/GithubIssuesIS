@@ -1,7 +1,9 @@
 using GithubIssuesIS.API.Exstensions;
+using GithubIssuesIS.API.Soap.Interfaces;
 using GithubIssuesIS.Application.Interfaces;
 using GithubIssuesIS.Repository;
 using Microsoft.EntityFrameworkCore;
+using SoapCore;
 
 namespace GithubIssuesIS.API
 {
@@ -37,6 +39,10 @@ namespace GithubIssuesIS.API
             app.UseAuthentication();
             app.UseAuthorization();
 
+            ((IApplicationBuilder)app).UseSoapEndpoint<IIssueSoapService>(
+                "/IssueSoapService.svc",
+                new SoapEncoderOptions(),
+                SoapSerializer.DataContractSerializer);
             app.MapControllers();
             app.MapGraphQL().RequireAuthorization();
 

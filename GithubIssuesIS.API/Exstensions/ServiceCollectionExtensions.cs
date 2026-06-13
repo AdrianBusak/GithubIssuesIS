@@ -2,10 +2,13 @@ using DMS.Infrastrucure.GitHub.Extensions;
 using DMS.Infrastrucure.Import.Extensions;
 using DMS.Infrastrucure.JwtAuthorization.Extensions;
 using GithubIssuesIS.API.GraphQL;
+using GithubIssuesIS.API.Soap.Interfaces;
+using GithubIssuesIS.API.Soap.Services;
 using GithubIssuesIS.Application.Interfaces;
 using GithubIssuesIS.Application.Issues;
 using GithubIssuesIS.Application.Services;
 using GithubIssuesIS.Repository.Extensions;
+using SoapCore;
 
 namespace GithubIssuesIS.API.Exstensions;
 
@@ -24,6 +27,9 @@ public static class ServiceCollectionExtensions
         services.AddAuthServices(configuration);
         services.AddIssueServices(configuration);
         services.AddImportServices();
+        services.AddSoapCore();
+        services.AddScoped<IIssueSoapService, IssueSoapService>();
+        services.AddScoped<IIssueXmlFileService, IssueXmlFileService>();
         services.AddGraphQLServer()
             .AddAuthorization()
             .AddQueryType<IssueQuery>()
