@@ -1,4 +1,5 @@
 using DMS.Infrastrucure.GitHub.Extensions;
+using DMS.Infrastrucure.Import.Extensions;
 using DMS.Infrastrucure.JwtAuthorization.Extensions;
 using GithubIssuesIS.Application.Interfaces;
 using GithubIssuesIS.Application.Issues;
@@ -21,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddRepository(connectionString);
         services.AddAuthServices(configuration);
         services.AddIssueServices(configuration);
+        services.AddImportServices();
         services.AddCors(options =>
         {
             options.AddPolicy(ClientCorsPolicy, policy =>

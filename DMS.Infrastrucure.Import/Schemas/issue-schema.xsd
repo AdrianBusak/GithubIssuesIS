@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="issue">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="number" type="positiveInt" />
+        <xs:element name="title" type="titleText" />
+        <xs:element name="body" type="bodyText" minOccurs="0" />
+        <xs:element name="state" type="stateText" />
+        <xs:element name="authorLogin" type="authorText" minOccurs="0" />
+        <xs:element name="htmlUrl" type="urlText" minOccurs="0" />
+        <xs:element name="createdAt" type="xs:dateTime" minOccurs="0" />
+        <xs:element name="closedAt" type="xs:dateTime" minOccurs="0" />
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="positiveInt">
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="titleText">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+      <xs:maxLength value="300" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="bodyText">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="4000" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="stateText">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+      <xs:maxLength value="50" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="authorText">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="150" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="urlText">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="500" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GithubIssuesIS.Application\GithubIssuesIS.Application.csproj" />
     <ProjectReference Include="..\DMS.Infrastrucure.GitHub\DMS.Infrastrucure.GitHub.csproj" />
+    <ProjectReference Include="..\DMS.Infrastrucure.Import\DMS.Infrastrucure.Import.csproj" />
     <ProjectReference Include="..\DMS.Infrastrucure.JwtAuthorization\DMS.Infrastrucure.JwtAuthorization.csproj" />
     <ProjectReference Include="..\GithubIssuesIS.Repository\GithubIssuesIS.Repository.csproj" />
   </ItemGroup>

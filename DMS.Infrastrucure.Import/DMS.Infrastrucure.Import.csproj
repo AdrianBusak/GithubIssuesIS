@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net" Version="7.*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GithubIssuesIS.Application\GithubIssuesIS.Application.csproj" />
+    <ProjectReference Include="..\GitHubIssuesIS.Domain\GitHubIssuesIS.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Schemas\issue-schema.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Schemas\issue-schema.xsd" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
