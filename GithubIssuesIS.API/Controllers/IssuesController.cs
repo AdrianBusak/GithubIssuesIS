@@ -146,6 +146,10 @@ public class IssuesController(IIssueService issueService) : ControllerBase
         {
             return StatusCode(StatusCodes.Status405MethodNotAllowed, new { ex.Message });
         }
+        catch (IssueProviderException ex)
+        {
+            return IssueProviderError(ex);
+        }
 
         if (!deleted)
         {

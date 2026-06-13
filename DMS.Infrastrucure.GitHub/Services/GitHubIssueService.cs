@@ -151,7 +151,26 @@ public class GitHubIssueService(
         int number,
         CancellationToken cancellationToken = default)
     {
-        throw new NotSupportedException("GitHub issues cannot be deleted. Close the issue instead.");
+        return CloseAsync(number, cancellationToken);
+    }
+
+    private async Task<bool> CloseAsync(
+        int number,
+        CancellationToken cancellationToken)
+    {
+        var issue = await GetByNumberAsync(number, cancellationToken);
+
+        if (issue is null)
+        {
+            return false;
+        }
+
+        issue.State = "closed";
+        issue.ClosedAt = DateTime.UtcNow;
+
+        await UpdateAsync(number, issue, cancellationToken);
+
+        return true;
     }
 
     private static Issue ToIssue(GitHubIssueResponse issue)

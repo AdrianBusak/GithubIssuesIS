@@ -38,6 +38,7 @@ namespace GithubIssuesIS.API
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapGraphQL().RequireAuthorization();
 
             using (var scope = app.Services.CreateScope())
             {

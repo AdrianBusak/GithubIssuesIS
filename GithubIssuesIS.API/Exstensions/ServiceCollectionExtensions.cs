@@ -1,6 +1,7 @@
 using DMS.Infrastrucure.GitHub.Extensions;
 using DMS.Infrastrucure.Import.Extensions;
 using DMS.Infrastrucure.JwtAuthorization.Extensions;
+using GithubIssuesIS.API.GraphQL;
 using GithubIssuesIS.Application.Interfaces;
 using GithubIssuesIS.Application.Issues;
 using GithubIssuesIS.Application.Services;
@@ -23,6 +24,10 @@ public static class ServiceCollectionExtensions
         services.AddAuthServices(configuration);
         services.AddIssueServices(configuration);
         services.AddImportServices();
+        services.AddGraphQLServer()
+            .AddAuthorization()
+            .AddQueryType<IssueQuery>()
+            .AddMutationType<IssueMutation>();
         services.AddCors(options =>
         {
             options.AddPolicy(ClientCorsPolicy, policy =>
