@@ -215,6 +215,12 @@ textarea {
     color: #b42318;
 }
 
+.error-list {
+    color: #b42318;
+    margin: 0;
+    padding-left: 20px;
+}
+
 @media (max-width: 760px) {
     .app-frame {
         grid-template-columns: 1fr;

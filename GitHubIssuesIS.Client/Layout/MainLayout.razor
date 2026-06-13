@@ -9,7 +9,10 @@
         <a class="brand" href="/issues">GitHubIssuesIS</a>
         <nav>
             <NavLink href="/issues" Match="NavLinkMatch.Prefix">Issues</NavLink>
-            <NavLink href="/import">Import</NavLink>
+            @if (AuthState.IsAdmin)
+            {
+                <NavLink href="/import">Import</NavLink>
+            }
             <NavLink href="/soap-search">SOAP</NavLink>
             <NavLink href="/weather">Weather</NavLink>
             <NavLink href="/graphql">GraphQL</NavLink>
@@ -128,7 +131,8 @@
 
     private static bool IsAdminOnlyRoute(string path)
     {
-        return path == "issues/create" ||
+        return path == "import" ||
+            path == "issues/create" ||
             path.StartsWith("issues/edit/", StringComparison.Ordinal);
     }
 

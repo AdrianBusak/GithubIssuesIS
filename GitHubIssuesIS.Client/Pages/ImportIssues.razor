@@ -1,10 +1,159 @@
 @page "/import"
+@inject AuthClient AuthClient
+@inject AuthStateService AuthState
+@inject ImportClient ImportClient
+@inject NavigationManager NavigationManager
 
 <main class="page-shell">
     <div class="page-header">
         <h1>Import Issues</h1>
     </div>
     <section class="panel">
-        <input type="file" disabled />
+        @if (!authorized)
+        {
+            <p class="status">Access denied.</p>
+        }
+        else
+        {
+            <div class="form-grid">
+                @if (!string.IsNullOrWhiteSpace(error))
+                {
+                    <p class="error">@error</p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(message))
+                {
+                    <p class="status">@message</p>
+                }
+
+                @if (errors.Count > 0)
+                {
+                    <ul class="error-list">
+                        @foreach (var validationError in errors)
+                        {
+                            <li>@validationError</li>
+                        }
+                    </ul>
+                }
+
+                <div class="form-row">
+                    <label for="import-file">JSON or XML file</label>
+                    <InputFile id="import-file" OnChange="SelectFile" accept=".json,.xml,application/json,application/xml" />
+                </div>
+
+                <div class="actions">
+                    <button type="button" @onclick="ImportAsync" disabled="@(selectedFile is null || importing)">
+                        @(importing ? "Importing..." : "Import")
+                    </button>
+                </div>
+            </div>
+        }
     </section>
 </main>
+
+@code {
+    private const long MaxFileSize = 1024 * 1024;
+
+    private IBrowserFile? selectedFile;
+    private bool authorized;
+    private bool importing;
+    private string? error;
+    private string? message;
+    private List<string> errors = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticated = await AuthClient.EnsureAuthenticatedAsync();
+        authorized = authenticated && AuthState.IsAdmin;
+
+        if (!authorized)
+        {
+            NavigationManager.NavigateTo(authenticated ? "/issues" : "/login");
+        }
+    }
+
+    private void SelectFile(InputFileChangeEventArgs args)
+    {
+        selectedFile = args.File;
+        error = null;
+        message = selectedFile.Name;
+        errors = [];
+    }
+
+    private async Task ImportAsync()
+    {
+        if (selectedFile is null)
+        {
+            error = "Select a JSON or XML file.";
+            return;
+        }
+
+        if (!TryGetContentType(selectedFile, out var contentType))
+        {
+            error = "Unsupported file type. Use .json or .xml.";
+            return;
+        }
+
+        importing = true;
+        error = null;
+        message = null;
+        errors = [];
+
+        try
+        {
+            await using var stream = selectedFile.OpenReadStream(MaxFileSize);
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            var result = await ImportClient.ImportAsync(content, contentType);
+
+            if (!result.Succeeded)
+            {
+                error = result.Message;
+                errors = result.Errors;
+                return;
+            }
+
+            message = result.Message;
+        }
+        catch (IOException)
+        {
+            error = "File could not be read.";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            error = "Admin login is required.";
+        }
+        catch (HttpRequestException)
+        {
+            error = "API request failed.";
+        }
+        finally
+        {
+            importing = false;
+        }
+    }
+
+    private static bool TryGetContentType(
+        IBrowserFile file,
+        out string contentType)
+    {
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+
+        if (extension == ".json" ||
+            file.ContentType.Contains("json", StringComparison.OrdinalIgnoreCase))
+        {
+            contentType = "application/json";
+            return true;
+        }
+
+        if (extension == ".xml" ||
+            file.ContentType.Contains("xml", StringComparison.OrdinalIgnoreCase))
+        {
+            contentType = "application/xml";
+            return true;
+        }
+
+        contentType = string.Empty;
+        return false;
+    }
+}
