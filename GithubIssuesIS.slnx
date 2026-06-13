@@ -9,6 +9,7 @@
     <Project Path="DMS.Infrastrucure.GitHub/DMS.Infrastrucure.GitHub.csproj" />
     <Project Path="DMS.Infrastrucure.Import/DMS.Infrastrucure.Import.csproj" />
     <Project Path="DMS.Infrastrucure.JwtAuthorization/DMS.Infrastrucure.JwtAuthorization.csproj" />
+    <Project Path="DMS.Infrastrucure.Weather/DMS.Infrastrucure.Weather.csproj" />
   </Folder>
   <Folder Name="/Repository/">
     <Project Path="GithubIssuesIS.Repository/GithubIssuesIS.Repository.csproj" />

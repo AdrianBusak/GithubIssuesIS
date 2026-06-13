@@ -1,10 +1,92 @@
 @page "/weather"
+@inject WeatherClient WeatherClient
 
 <main class="page-shell">
     <div class="page-header">
         <h1>Weather</h1>
     </div>
     <section class="panel">
-        <p class="status">DHMZ</p>
+        <div class="form-grid">
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <p class="error">@error</p>
+            }
+
+            <div class="form-row">
+                <label for="city">City</label>
+                <input id="city" @bind="city" @bind:event="oninput" />
+            </div>
+
+            <div class="actions">
+                <button type="button" @onclick="SearchAsync" disabled="@searching">
+                    @(searching ? "Searching..." : "Search")
+                </button>
+            </div>
+        </div>
+
+        @if (stations is not null)
+        {
+            @if (stations.Count == 0)
+            {
+                <p class="status">No matching stations found.</p>
+            }
+            else
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>City</th>
+                            <th>Temperature</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var station in stations)
+                        {
+                            <tr>
+                                <td>@station.City</td>
+                                <td>@station.Temperature</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
     </section>
 </main>
+
+@code {
+    private string city = string.Empty;
+    private List<WeatherStationDto>? stations;
+    private bool searching;
+    private string? error;
+
+    private async Task SearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(city))
+        {
+            error = "City is required.";
+            return;
+        }
+
+        searching = true;
+        error = null;
+        stations = null;
+
+        try
+        {
+            stations = await WeatherClient.GetCurrentTemperatureAsync(city);
+        }
+        catch (Grpc.Core.RpcException ex)
+        {
+            error = ex.Status.Detail;
+        }
+        catch (HttpRequestException)
+        {
+            error = "Weather request failed.";
+        }
+        finally
+        {
+            searching = false;
+        }
+    }
+}
