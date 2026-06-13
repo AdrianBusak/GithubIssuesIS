@@ -207,6 +207,31 @@ textarea {
     resize: vertical;
 }
 
+.graphql-form {
+    max-width: none;
+}
+
+.code-input,
+.code-output {
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.code-input {
+    min-height: 220px;
+}
+
+.code-output {
+    background: #111827;
+    border-radius: 6px;
+    box-sizing: border-box;
+    color: #e5e7eb;
+    min-height: 220px;
+    margin: 0;
+    overflow: auto;
+    padding: 12px;
+    white-space: pre-wrap;
+}
+
 .status {
     color: #52616f;
 }

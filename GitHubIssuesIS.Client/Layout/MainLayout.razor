@@ -125,7 +125,7 @@
 
     private static bool IsProtectedRoute(string path)
     {
-        return path is "" or "issues" ||
+        return path is "" or "issues" or "graphql" ||
             IsAdminOnlyRoute(path);
     }
 
