@@ -1,13 +1,94 @@
 @page "/soap-search"
+@inject SoapClient SoapClient
 
 <main class="page-shell">
     <div class="page-header">
         <h1>SOAP Search</h1>
     </div>
     <section class="panel">
-        <div class="form-row">
-            <label for="xpath">XPath</label>
-            <input id="xpath" disabled />
+        <div class="form-grid">
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <p class="error">@error</p>
+            }
+
+            <div class="form-row">
+                <label for="search-term">Search term</label>
+                <input id="search-term" @bind="searchTerm" @bind:event="oninput" />
+            </div>
+
+            <div class="actions">
+                <button type="button" @onclick="SearchAsync" disabled="@searching">
+                    @(searching ? "Searching..." : "Search")
+                </button>
+            </div>
         </div>
+
+        @if (result is not null)
+        {
+            <p class="status">@result.Count result(s)</p>
+
+            @if (result.Issues.Count > 0)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Title</th>
+                            <th>State</th>
+                            <th>Author</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var issue in result.Issues)
+                        {
+                            <tr>
+                                <td>@issue.Number</td>
+                                <td>@issue.Title</td>
+                                <td>@issue.State</td>
+                                <td>@issue.AuthorLogin</td>
+                                <td>@issue.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
     </section>
 </main>
+
+@code {
+    private string searchTerm = string.Empty;
+    private SearchIssuesResponseDto? result;
+    private bool searching;
+    private string? error;
+
+    private async Task SearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            error = "Search term is required.";
+            return;
+        }
+
+        searching = true;
+        error = null;
+        result = null;
+
+        try
+        {
+            result = await SoapClient.SearchIssuesAsync(searchTerm);
+        }
+        catch (HttpRequestException ex)
+        {
+            error = string.IsNullOrWhiteSpace(ex.Message)
+                ? "SOAP request failed."
+                : ex.Message;
+        }
+        finally
+        {
+            searching = false;
+        }
+    }
+}
