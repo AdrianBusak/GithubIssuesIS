@@ -1,4 +1,5 @@
 using GithubIssuesIS.API.Exstensions;
+using GithubIssuesIS.API.Grpc.Services;
 using GithubIssuesIS.API.Soap.Interfaces;
 using GithubIssuesIS.Application.Interfaces;
 using GithubIssuesIS.Repository;
@@ -38,11 +39,15 @@ namespace GithubIssuesIS.API
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseGrpcWeb();
 
             ((IApplicationBuilder)app).UseSoapEndpoint<IIssueSoapService>(
                 "/IssueSoapService.svc",
                 new SoapEncoderOptions(),
                 SoapSerializer.DataContractSerializer);
+            app.MapGrpcService<WeatherGrpcService>()
+                .EnableGrpcWeb()
+                .RequireCors(ServiceCollectionExtensions.ClientCorsPolicy);
             app.MapControllers();
             app.MapGraphQL().RequireAuthorization();
 

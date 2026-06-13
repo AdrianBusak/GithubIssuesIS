@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option csharp_namespace = "GithubIssuesIS.API.Grpc";
+
+package weather;
+
+service Weather {
+  rpc GetCurrentTemperature (WeatherRequest) returns (WeatherResponse);
+}
+
+message WeatherRequest {
+  string city = 1;
+}
+
+message WeatherStation {
+  string city = 1;
+  string temperature = 2;
+}
+
+message WeatherResponse {
+  repeated WeatherStation stations = 1;
+}

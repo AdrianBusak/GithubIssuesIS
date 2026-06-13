@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.*" />
+    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.*" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="13.*" />
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
@@ -23,10 +25,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="Grpc\Protos\weather.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\GithubIssuesIS.Application\GithubIssuesIS.Application.csproj" />
     <ProjectReference Include="..\DMS.Infrastrucure.GitHub\DMS.Infrastrucure.GitHub.csproj" />
     <ProjectReference Include="..\DMS.Infrastrucure.Import\DMS.Infrastrucure.Import.csproj" />
     <ProjectReference Include="..\DMS.Infrastrucure.JwtAuthorization\DMS.Infrastrucure.JwtAuthorization.csproj" />
+    <ProjectReference Include="..\DMS.Infrastrucure.Weather\DMS.Infrastrucure.Weather.csproj" />
     <ProjectReference Include="..\GithubIssuesIS.Repository\GithubIssuesIS.Repository.csproj" />
   </ItemGroup>
 

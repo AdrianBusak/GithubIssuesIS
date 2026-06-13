@@ -1,6 +1,7 @@
 using DMS.Infrastrucure.GitHub.Extensions;
 using DMS.Infrastrucure.Import.Extensions;
 using DMS.Infrastrucure.JwtAuthorization.Extensions;
+using DMS.Infrastrucure.Weather.Extensions;
 using GithubIssuesIS.API.GraphQL;
 using GithubIssuesIS.API.Soap.Interfaces;
 using GithubIssuesIS.API.Soap.Services;
@@ -27,6 +28,8 @@ public static class ServiceCollectionExtensions
         services.AddAuthServices(configuration);
         services.AddIssueServices(configuration);
         services.AddImportServices();
+        services.AddDhmzWeatherServices();
+        services.AddGrpc();
         services.AddSoapCore();
         services.AddScoped<IIssueSoapService, IssueSoapService>();
         services.AddScoped<IIssueXmlFileService, IssueXmlFileService>();
@@ -44,6 +47,11 @@ public static class ServiceCollectionExtensions
                         "http://localhost:5100")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
+                    .WithExposedHeaders(
+                        "Grpc-Status",
+                        "Grpc-Message",
+                        "Grpc-Encoding",
+                        "Grpc-Accept-Encoding")
                     .AllowCredentials();
             });
         });
