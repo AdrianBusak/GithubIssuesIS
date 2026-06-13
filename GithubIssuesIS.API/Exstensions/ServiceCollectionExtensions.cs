@@ -1,5 +1,7 @@
+using DMS.Infrastrucure.GitHub.Extensions;
 using DMS.Infrastrucure.JwtAuthorization.Extensions;
 using GithubIssuesIS.Application.Interfaces;
+using GithubIssuesIS.Application.Issues;
 using GithubIssuesIS.Application.Services;
 using GithubIssuesIS.Repository.Extensions;
 
@@ -18,7 +20,7 @@ public static class ServiceCollectionExtensions
 
         services.AddRepository(connectionString);
         services.AddAuthServices(configuration);
-        services.AddScoped<IIssueService, IssueService>();
+        services.AddIssueServices(configuration);
         services.AddCors(options =>
         {
             options.AddPolicy(ClientCorsPolicy, policy =>
@@ -34,6 +36,30 @@ public static class ServiceCollectionExtensions
         });
 
         return services;
+    }
+
+    private static IServiceCollection AddIssueServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var issueSettings = configuration
+            .GetSection(IssueSettings.SectionName)
+            .Get<IssueSettings>() ?? new IssueSettings();
+
+        services.AddSingleton(issueSettings);
+
+        if (issueSettings.Source.Equals(IssueSources.Local, StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddScoped<IIssueService, LocalIssueService>();
+            return services;
+        }
+
+        if (!issueSettings.Source.Equals(IssueSources.GitHub, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Issues:Source must be 'Local' or 'GitHub'.");
+        }
+
+        return services.AddGitHubIssueServices(issueSettings.GitHub);
     }
 
     private static IServiceCollection AddAuthServices(

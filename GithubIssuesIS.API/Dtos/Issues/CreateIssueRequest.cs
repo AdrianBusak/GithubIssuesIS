@@ -5,7 +5,7 @@ namespace GithubIssuesIS.API.Dtos.Issues;
 public sealed class CreateIssueRequest
 {
     [Range(1, int.MaxValue)]
-    public int Number { get; init; }
+    public int? Number { get; init; }
 
     [Required]
     [MaxLength(300)]

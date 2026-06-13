@@ -2,6 +2,7 @@ using GitHubIssuesIS.Domain;
 using GitHubIssuesIS.Domain.Entities;
 using GithubIssuesIS.API.Dtos.Issues;
 using GithubIssuesIS.Application.Interfaces;
+using GithubIssuesIS.Application.Issues;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,12 +18,33 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     [Authorize(Roles = Roles.UserOrAdmin)]
     public async Task<ActionResult<List<IssueResponse>>> GetAll(CancellationToken cancellationToken)
     {
-        var issues = await _issueService.GetAllAsync(cancellationToken);
+        List<Issue> issues;
+
+        try
+        {
+            issues = await _issueService.GetAllAsync(cancellationToken);
+        }
+        catch (IssueProviderException ex)
+        {
+            return IssueProviderError(ex);
+        }
 
         return Ok(issues
             .OrderBy(issue => issue.Number)
             .Select(ToResponse)
             .ToList());
+    }
+
+    [HttpGet("capabilities")]
+    [Authorize(Roles = Roles.UserOrAdmin)]
+    public ActionResult<IssueCapabilitiesResponse> GetCapabilities()
+    {
+        var capabilities = _issueService.Capabilities;
+
+        return Ok(new IssueCapabilitiesResponse(
+            capabilities.Source,
+            capabilities.SupportsDelete,
+            capabilities.RequiresNumberOnCreate));
     }
 
     [HttpGet("{number:int}")]
@@ -31,7 +53,16 @@ public class IssuesController(IIssueService issueService) : ControllerBase
         int number,
         CancellationToken cancellationToken)
     {
-        var issue = await _issueService.GetByNumberAsync(number, cancellationToken);
+        Issue? issue;
+
+        try
+        {
+            issue = await _issueService.GetByNumberAsync(number, cancellationToken);
+        }
+        catch (IssueProviderException ex)
+        {
+            return IssueProviderError(ex);
+        }
 
         if (issue is null)
         {
@@ -47,6 +78,11 @@ public class IssuesController(IIssueService issueService) : ControllerBase
         CreateIssueRequest request,
         CancellationToken cancellationToken)
     {
+        if (_issueService.Capabilities.RequiresNumberOnCreate && request.Number is null)
+        {
+            return BadRequest(new { message = "Issue number is required." });
+        }
+
         try
         {
             var issue = await _issueService.CreateAsync(ToIssue(request), cancellationToken);
@@ -61,16 +97,30 @@ public class IssuesController(IIssueService issueService) : ControllerBase
         {
             return Conflict(new { ex.Message });
         }
+        catch (IssueProviderException ex)
+        {
+            return IssueProviderError(ex);
+        }
     }
 
     [HttpPut("{number:int}")]
+    [HttpPatch("{number:int}")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<IssueResponse>> Update(
         int number,
         UpdateIssueRequest request,
         CancellationToken cancellationToken)
     {
-        var issue = await _issueService.UpdateAsync(number, ToIssue(request), cancellationToken);
+        Issue? issue;
+
+        try
+        {
+            issue = await _issueService.UpdateAsync(number, ToIssue(request), cancellationToken);
+        }
+        catch (IssueProviderException ex)
+        {
+            return IssueProviderError(ex);
+        }
 
         if (issue is null)
         {
@@ -86,7 +136,16 @@ public class IssuesController(IIssueService issueService) : ControllerBase
         int number,
         CancellationToken cancellationToken)
     {
-        var deleted = await _issueService.DeleteAsync(number, cancellationToken);
+        bool deleted;
+
+        try
+        {
+            deleted = await _issueService.DeleteAsync(number, cancellationToken);
+        }
+        catch (NotSupportedException ex)
+        {
+            return StatusCode(StatusCodes.Status405MethodNotAllowed, new { ex.Message });
+        }
 
         if (!deleted)
         {
@@ -100,7 +159,7 @@ public class IssuesController(IIssueService issueService) : ControllerBase
     {
         return new Issue
         {
-            Number = request.Number,
+            Number = request.Number.GetValueOrDefault(),
             Title = request.Title,
             Body = request.Body,
             State = request.State,
@@ -135,5 +194,16 @@ public class IssuesController(IIssueService issueService) : ControllerBase
             issue.HtmlUrl,
             issue.CreatedAt,
             issue.ClosedAt);
+    }
+
+    private ObjectResult IssueProviderError(IssueProviderException exception)
+    {
+        return StatusCode(
+            StatusCodes.Status502BadGateway,
+            new
+            {
+                message = exception.Message,
+                source = _issueService.Capabilities.Source
+            });
     }
 }

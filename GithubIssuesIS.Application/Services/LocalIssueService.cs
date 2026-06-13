@@ -1,11 +1,17 @@
 using GitHubIssuesIS.Domain.Entities;
 using GithubIssuesIS.Application.Interfaces;
+using GithubIssuesIS.Application.Issues;
 
 namespace GithubIssuesIS.Application.Services;
 
-public class IssueService(IIssueRepository issueRepository) : IIssueService
+public class LocalIssueService(IIssueRepository issueRepository) : IIssueService
 {
     private readonly IIssueRepository _issueRepository = issueRepository;
+
+    public IssueCapabilities Capabilities { get; } = new(
+        IssueSources.Local,
+        SupportsDelete: true,
+        RequiresNumberOnCreate: true);
 
     public Task<List<Issue>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -23,6 +29,11 @@ public class IssueService(IIssueRepository issueRepository) : IIssueService
         Issue issue,
         CancellationToken cancellationToken = default)
     {
+        if (issue.Number <= 0)
+        {
+            throw new InvalidOperationException("Issue number is required.");
+        }
+
         var exists = await _issueRepository.ExistsByNumberAsync(issue.Number, cancellationToken);
 
         if (exists)

@@ -1,9 +1,12 @@
 using GitHubIssuesIS.Domain.Entities;
+using GithubIssuesIS.Application.Issues;
 
 namespace GithubIssuesIS.Application.Interfaces;
 
 public interface IIssueService
 {
+    IssueCapabilities Capabilities { get; }
+
     Task<List<Issue>> GetAllAsync(CancellationToken cancellationToken = default);
 
     Task<Issue?> GetByNumberAsync(
