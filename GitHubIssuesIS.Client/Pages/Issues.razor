@@ -35,7 +35,7 @@
                         <th>State</th>
                         <th>Author</th>
                         <th>Created</th>
-                        @if (AuthState.IsAdmin)
+                        @if (CanEditIssues)
                         {
                             <th></th>
                         }
@@ -50,12 +50,19 @@
                             <td>@issue.State</td>
                             <td>@issue.AuthorLogin</td>
                             <td>@issue.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                            @if (AuthState.IsAdmin)
+                            @if (CanEditIssues)
                             {
                                 <td>
                                     <div class="actions">
                                         <a class="button secondary" href="@($"/issues/edit/{issue.Number}")">Edit</a>
-                                        <button class="danger" @onclick="() => DeleteAsync(issue.Number)">Delete</button>
+                                        @if (CanCloseIssue(issue))
+                                        {
+                                            <button class="secondary" @onclick="() => CloseAsync(issue)">Soft delete</button>
+                                        }
+                                        @if (CanDeleteIssues)
+                                        {
+                                            <button class="danger" @onclick="() => DeleteAsync(issue.Number)">Delete</button>
+                                        }
                                     </div>
                                 </td>
                             }
@@ -69,7 +76,12 @@
 
 @code {
     private List<IssueDto>? issues;
+    private IssueCapabilitiesDto? capabilities;
     private string? error;
+
+    private bool CanEditIssues => AuthState.IsAdmin;
+
+    private bool CanDeleteIssues => AuthState.IsAdmin && capabilities?.SupportsDelete == true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,6 +93,7 @@
         try
         {
             error = null;
+            capabilities = await IssueClient.GetCapabilitiesAsync();
             issues = await IssueClient.GetAllAsync();
         }
         catch (HttpRequestException)
@@ -95,7 +108,7 @@
 
     private async Task DeleteAsync(int number)
     {
-        if (!AuthState.IsAdmin)
+        if (!CanDeleteIssues)
         {
             return;
         }
@@ -106,5 +119,29 @@
         {
             await LoadAsync();
         }
+    }
+
+    private async Task CloseAsync(IssueDto issue)
+    {
+        if (!CanCloseIssue(issue))
+        {
+            return;
+        }
+
+        var updated = await IssueClient.CloseAsync(issue);
+
+        if (updated is null)
+        {
+            error = "Soft delete failed.";
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private bool CanCloseIssue(IssueDto issue)
+    {
+        return CanEditIssues &&
+            !string.Equals(issue.State, "closed", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -27,11 +27,14 @@
             }
 
             <div class="form-grid">
-                <div class="form-row">
-                    <label for="number">Number</label>
-                    <InputNumber id="number" @bind-Value="issue.Number" />
-                    <ValidationMessage For="() => issue.Number" />
-                </div>
+                @if (RequiresNumberOnCreate)
+                {
+                    <div class="form-row">
+                        <label for="number">Number</label>
+                        <InputNumber id="number" @bind-Value="issue.Number" />
+                        <ValidationMessage For="() => issue.Number" />
+                    </div>
+                }
 
                 <div class="form-row">
                     <label for="title">Title</label>
@@ -75,8 +78,11 @@
 
 @code {
     private readonly CreateIssueDto issue = new();
+    private IssueCapabilitiesDto? capabilities;
     private bool authorized;
     private string? error;
+
+    private bool RequiresNumberOnCreate => capabilities?.RequiresNumberOnCreate != false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,7 +92,10 @@
         if (!authorized)
         {
             NavigationManager.NavigateTo(authenticated ? "/issues" : "/login");
+            return;
         }
+
+        capabilities = await IssueClient.GetCapabilitiesAsync();
     }
 
     private async Task SaveAsync()
@@ -94,6 +103,17 @@
         if (!authorized)
         {
             return;
+        }
+
+        if (RequiresNumberOnCreate && issue.Number is null)
+        {
+            error = "Issue number is required.";
+            return;
+        }
+
+        if (!RequiresNumberOnCreate)
+        {
+            issue.Number = null;
         }
 
         var created = await IssueClient.CreateAsync(issue);

@@ -9,10 +9,6 @@
         <a class="brand" href="/issues">GitHubIssuesIS</a>
         <nav>
             <NavLink href="/issues" Match="NavLinkMatch.Prefix">Issues</NavLink>
-            @if (AuthState.IsAdmin)
-            {
-                <NavLink href="/issues/create">Create</NavLink>
-            }
             <NavLink href="/import">Import</NavLink>
             <NavLink href="/soap-search">SOAP</NavLink>
             <NavLink href="/weather">Weather</NavLink>

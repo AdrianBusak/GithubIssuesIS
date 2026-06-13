@@ -5,7 +5,7 @@ namespace GitHubIssuesIS.Client.Models;
 public sealed class CreateIssueDto
 {
     [Range(1, int.MaxValue)]
-    public int Number { get; set; }
+    public int? Number { get; set; }
 
     [Required]
     [MaxLength(300)]

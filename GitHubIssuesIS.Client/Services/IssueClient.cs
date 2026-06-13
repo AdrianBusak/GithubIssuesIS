@@ -33,6 +33,19 @@ public class IssueClient(
         return await response.Content.ReadFromJsonAsync<List<IssueDto>>() ?? [];
     }
 
+    public async Task<IssueCapabilitiesDto?> GetCapabilitiesAsync()
+    {
+        using var response = await SendWithAuthRetryAsync(
+            () => new HttpRequestMessage(HttpMethod.Get, "api/issues/capabilities"));
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<IssueCapabilitiesDto>();
+    }
+
     public async Task<IssueDto?> GetByNumberAsync(int number)
     {
         using var response = await SendWithAuthRetryAsync(
@@ -62,7 +75,7 @@ public class IssueClient(
     public async Task<IssueDto?> UpdateAsync(int number, UpdateIssueDto dto)
     {
         using var response = await SendWithAuthRetryAsync(
-            () => CreateJsonRequest(HttpMethod.Put, $"api/issues/{number}", dto));
+            () => CreateJsonRequest(HttpMethod.Patch, $"api/issues/{number}", dto));
 
         if (!response.IsSuccessStatusCode)
         {
@@ -70,6 +83,21 @@ public class IssueClient(
         }
 
         return await response.Content.ReadFromJsonAsync<IssueDto>();
+    }
+
+    public Task<IssueDto?> CloseAsync(IssueDto issue)
+    {
+        return UpdateAsync(
+            issue.Number,
+            new UpdateIssueDto
+            {
+                Title = issue.Title,
+                Body = issue.Body,
+                State = "closed",
+                AuthorLogin = issue.AuthorLogin,
+                HtmlUrl = issue.HtmlUrl,
+                ClosedAt = DateTime.UtcNow
+            });
     }
 
     public async Task<bool> DeleteAsync(int number)
