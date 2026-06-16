@@ -1,0 +1,106 @@
+@inject AuthClient AuthClient
+@inject AuthStateService AuthState
+@inject NavigationManager NavigationManager
+
+@if (checkingAccess)
+{
+    <LayoutView Layout="@DefaultLayout">
+        <main class="page-shell">
+            <section class="panel">
+                <p class="status">Loading...</p>
+            </section>
+        </main>
+    </LayoutView>
+}
+else if (canRender)
+{
+    <RouteView RouteData="@RouteData" DefaultLayout="@DefaultLayout" />
+}
+
+@code {
+    [Parameter]
+    public RouteData RouteData { get; set; } = default!;
+
+    [Parameter]
+    public Type? DefaultLayout { get; set; }
+
+    private bool checkingAccess = true;
+    private bool canRender;
+    private string? checkedPath;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var path = GetCurrentPath();
+
+        if (path == checkedPath && canRender)
+        {
+            return;
+        }
+
+        checkedPath = path;
+        canRender = false;
+
+        var accessLevel = GetAccessLevel(path);
+
+        if (accessLevel == AccessLevel.Public)
+        {
+            checkingAccess = false;
+            canRender = true;
+            return;
+        }
+
+        checkingAccess = true;
+
+        var authenticated = await AuthClient.EnsureAuthenticatedAsync();
+
+        if (!authenticated)
+        {
+            checkingAccess = false;
+            NavigationManager.NavigateTo("/login", replace: true);
+            return;
+        }
+
+        if (accessLevel == AccessLevel.Admin && !AuthState.IsAdmin)
+        {
+            checkingAccess = false;
+            NavigationManager.NavigateTo("/issues", replace: true);
+            return;
+        }
+
+        checkingAccess = false;
+        canRender = true;
+    }
+
+    private string GetCurrentPath()
+    {
+        return NavigationManager
+            .ToBaseRelativePath(NavigationManager.Uri)
+            .Split('?', '#')[0]
+            .Trim('/')
+            .ToLowerInvariant();
+    }
+
+    private static AccessLevel GetAccessLevel(string path)
+    {
+        if (path is "" or "issues" or "graphql" or "soap-search")
+        {
+            return AccessLevel.Authenticated;
+        }
+
+        if (path == "import" ||
+            path == "issues/create" ||
+            path.StartsWith("issues/edit/", StringComparison.Ordinal))
+        {
+            return AccessLevel.Admin;
+        }
+
+        return AccessLevel.Public;
+    }
+
+    private enum AccessLevel
+    {
+        Public,
+        Authenticated,
+        Admin
+    }
+}

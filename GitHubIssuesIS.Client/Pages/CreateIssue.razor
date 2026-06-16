@@ -1,6 +1,4 @@
 @page "/issues/create"
-@inject AuthClient AuthClient
-@inject AuthStateService AuthState
 @inject IssueClient IssueClient
 @inject NavigationManager NavigationManager
 
@@ -11,12 +9,6 @@
     </div>
 
     <section class="panel">
-        @if (!authorized)
-        {
-            <p class="status">Access denied.</p>
-        }
-        else
-        {
         <EditForm Model="@issue" OnValidSubmit="SaveAsync">
             <DataAnnotationsValidator />
             <ValidationSummary />
@@ -72,39 +64,23 @@
                 </div>
             </div>
         </EditForm>
-        }
     </section>
 </main>
 
 @code {
     private readonly CreateIssueDto issue = new();
     private IssueCapabilitiesDto? capabilities;
-    private bool authorized;
     private string? error;
 
     private bool RequiresNumberOnCreate => capabilities?.RequiresNumberOnCreate != false;
 
     protected override async Task OnInitializedAsync()
     {
-        var authenticated = await AuthClient.EnsureAuthenticatedAsync();
-        authorized = authenticated && AuthState.IsAdmin;
-
-        if (!authorized)
-        {
-            NavigationManager.NavigateTo(authenticated ? "/issues" : "/login");
-            return;
-        }
-
         capabilities = await IssueClient.GetCapabilitiesAsync();
     }
 
     private async Task SaveAsync()
     {
-        if (!authorized)
-        {
-            return;
-        }
-
         if (RequiresNumberOnCreate && issue.Number is null)
         {
             error = "Issue number is required.";

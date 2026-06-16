@@ -41,20 +41,9 @@
 </div>
 
 @code {
-    private bool checkingRouteAccess;
-
     protected override void OnInitialized()
     {
         AuthState.Changed += OnAuthStateChanged;
-        NavigationManager.LocationChanged += OnLocationChanged;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await EnsureRouteAccessAsync();
-        }
     }
 
     private async Task SignOutAsync()
@@ -65,80 +54,11 @@
 
     private void OnAuthStateChanged()
     {
-        _ = InvokeAsync(async () =>
-        {
-            await EnsureRouteAccessAsync();
-            StateHasChanged();
-        });
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
-    {
-        _ = InvokeAsync(EnsureRouteAccessAsync);
-    }
-
-    private async Task EnsureRouteAccessAsync()
-    {
-        if (checkingRouteAccess)
-        {
-            return;
-        }
-
-        checkingRouteAccess = true;
-
-        try
-        {
-            var path = GetCurrentPath();
-
-            if (!IsProtectedRoute(path))
-            {
-                return;
-            }
-
-            var authenticated = await AuthClient.EnsureAuthenticatedAsync();
-
-            if (!authenticated)
-            {
-                NavigationManager.NavigateTo("/login", replace: true);
-                return;
-            }
-
-            if (IsAdminOnlyRoute(path) && !AuthState.IsAdmin)
-            {
-                NavigationManager.NavigateTo("/issues", replace: true);
-            }
-        }
-        finally
-        {
-            checkingRouteAccess = false;
-        }
-    }
-
-    private string GetCurrentPath()
-    {
-        return NavigationManager
-            .ToBaseRelativePath(NavigationManager.Uri)
-            .Split('?', '#')[0]
-            .Trim('/')
-            .ToLowerInvariant();
-    }
-
-    private static bool IsProtectedRoute(string path)
-    {
-        return path is "" or "issues" or "graphql" ||
-            IsAdminOnlyRoute(path);
-    }
-
-    private static bool IsAdminOnlyRoute(string path)
-    {
-        return path == "import" ||
-            path == "issues/create" ||
-            path.StartsWith("issues/edit/", StringComparison.Ordinal);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
         AuthState.Changed -= OnAuthStateChanged;
-        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }

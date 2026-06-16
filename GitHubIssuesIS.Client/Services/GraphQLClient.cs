@@ -46,11 +46,6 @@ public class GraphQLClient(
     private async Task<HttpResponseMessage> SendWithAuthRetryAsync(
         Func<HttpRequestMessage> requestFactory)
     {
-        if (!_authState.IsAuthenticated)
-        {
-            await _authClient.RefreshAsync();
-        }
-
         var response = await SendAsync(requestFactory());
 
         if (response.StatusCode == HttpStatusCode.Unauthorized &&

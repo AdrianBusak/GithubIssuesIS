@@ -9,6 +9,8 @@ public class AuthClient(HttpClient httpClient, AuthStateService authState)
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly AuthStateService _authState = authState;
+    private readonly object _refreshLock = new();
+    private Task<bool>? _refreshTask;
 
     public Task<bool> RegisterAsync(LoginRequestDto request)
     {
@@ -32,16 +34,40 @@ public class AuthClient(HttpClient httpClient, AuthStateService authState)
 
     public async Task<bool> RefreshAsync()
     {
-        using var request = CreateRequest(HttpMethod.Post, "api/auth/refresh");
-        using var response = await _httpClient.SendAsync(request);
+        Task<bool> refreshTask;
 
-        if (!response.IsSuccessStatusCode)
+        lock (_refreshLock)
         {
-            _authState.Clear();
-            return false;
+            _refreshTask ??= RefreshCoreAsync();
+            refreshTask = _refreshTask;
         }
 
-        return await ApplyAuthResponseAsync(response);
+        return await refreshTask;
+    }
+
+    private async Task<bool> RefreshCoreAsync()
+    {
+        using var request = CreateRequest(HttpMethod.Post, "api/auth/refresh");
+
+        try
+        {
+            using var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _authState.Clear();
+                return false;
+            }
+
+            return await ApplyAuthResponseAsync(response);
+        }
+        finally
+        {
+            lock (_refreshLock)
+            {
+                _refreshTask = null;
+            }
+        }
     }
 
     public async Task SignOutAsync()

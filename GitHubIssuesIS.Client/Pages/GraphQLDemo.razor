@@ -1,42 +1,33 @@
 @page "/graphql"
-@inject AuthClient AuthClient
 @inject GraphQLClient GraphQLClient
-@inject NavigationManager NavigationManager
 
 <main class="page-shell">
     <div class="page-header">
         <h1>GraphQL</h1>
     </div>
     <section class="panel">
-        @if (!authorized)
-        {
-            <p class="status">Login is required.</p>
-        }
-        else
-        {
-            <div class="form-grid graphql-form">
-                @if (!string.IsNullOrWhiteSpace(error))
-                {
-                    <p class="error">@error</p>
-                }
+        <div class="form-grid graphql-form">
+            @if (!string.IsNullOrWhiteSpace(error))
+            {
+                <p class="error">@error</p>
+            }
 
-                <div class="form-row">
-                    <label for="graphql-query">Query</label>
-                    <textarea id="graphql-query" class="code-input" @bind="query"></textarea>
-                </div>
-
-                <div class="actions">
-                    <button type="button" @onclick="ExecuteAsync" disabled="@executing">
-                        @(executing ? "Executing..." : "Execute")
-                    </button>
-                </div>
-
-                <div class="form-row">
-                    <label for="graphql-response">Response</label>
-                    <pre id="graphql-response" class="code-output">@response</pre>
-                </div>
+            <div class="form-row">
+                <label for="graphql-query">Query</label>
+                <textarea id="graphql-query" class="code-input" @bind="query"></textarea>
             </div>
-        }
+
+            <div class="actions">
+                <button type="button" @onclick="ExecuteAsync" disabled="@executing">
+                    @(executing ? "Executing..." : "Execute")
+                </button>
+            </div>
+
+            <div class="form-row">
+                <label for="graphql-response">Response</label>
+                <pre id="graphql-response" class="code-output">@response</pre>
+            </div>
+        </div>
     </section>
 </main>
 
@@ -52,18 +43,7 @@
 
     private string? response;
     private string? error;
-    private bool authorized;
     private bool executing;
-
-    protected override async Task OnInitializedAsync()
-    {
-        authorized = await AuthClient.EnsureAuthenticatedAsync();
-
-        if (!authorized)
-        {
-            NavigationManager.NavigateTo("/login", replace: true);
-        }
-    }
 
     private async Task ExecuteAsync()
     {
